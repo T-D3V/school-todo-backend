@@ -1,0 +1,22 @@
+{
+  "name": "SchoolTodoBackend",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "web",
+  "workspaceFolder": "/usr/src/app",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "visualstudioexptteam.vscodeintellicode",
+        "tyriar.sort-lines",
+        "ms-python.black-formatter",
+        "oderwat.indent-rainbow",
+        "njpwerner.autodocstring"
+      ]
+    }
+  },
+  "forwardPorts": [
+    3800
+  ]
+}
