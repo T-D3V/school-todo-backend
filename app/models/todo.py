@@ -15,5 +15,18 @@ class Todo(db.Model):
   user_id = Column(ForeignKey('user_table.id'))
   users: Mapped[List["user.User"]] = relationship(back_populates="todos")
 
+  @property
+  def serialized(self):
+    """Return object data in serializable format
+    """
+    return {
+      'id': self.id,
+      'title': self.title,
+      'description': self.description,
+      'duedate': self.duedate,
+      'status': self.status,
+      'user_id': self.user_id
+    }
+
   def __repr__(self) -> str:
     return f'<Todo "{self.title}">'
