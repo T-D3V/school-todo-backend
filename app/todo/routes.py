@@ -3,57 +3,90 @@ from app.todo import bp
 from app.extensions import db
 from app.models.todo import Todo
 import datetime
+from app.auth.decorators import token_required
+from app.models.role import ROLES
 
 @bp.route('/', methods = ['GET'])
-def read_all_todos():
-  todos = Todo.query.all()
+@token_required
+def read_all_todos(current_user):
+  todos = Todo.query.all() if ROLES['admin'] == current_user.role_id else Todo.query.filter_by(user_id=current_user.user_id).all()
   return jsonify({
+    'message': 'Gathered all accessible todos.',
     'data': [todo.serialized for todo in todos]
   }), 200
 
 @bp.route('/', methods = ['POST'])
-def create_new_todo():
-  new_todo = Todo(title=request.form['title'],description=request.form['description'],duedate=datetime.datetime.fromisoformat(request.form['duedate']),status=0,user_id=1)
+@token_required
+def create_new_todo(current_user):
+  title = request.json.get('title')
+  description = request.json.get('description')
+  duedate = request.json.get('duedate')
+  user_id = current_user.id
+
+  new_todo = Todo(title=title,description=description,duedate=datetime.datetime.fromisoformat(duedate),status=0,user_id=user_id)
   db.session.add(new_todo)
   db.session.commit()
   return jsonify({
+    'message': 'Successfully created a new todo.',
     'data': new_todo.serialized
   }), 201
 
 @bp.route('/<id>', methods = ['GET'])
-def read_single_todo(id):
-  res = Todo.query.get(id)
-  return (jsonify({
-    'data': res.serialized
-  }), 200) if res else (jsonify(), 404)
+@token_required
+def read_single_todo(current_user, id):
+  todo = Todo.query.get(id)
+  if not todo:
+    return jsonify({'message': 'There is no such todo!'}), 404
+  if ROLES['user'] == current_user.role_id and todo.user_id != current_user.user_id:
+    return jsonify({'message': 'You don\'t have access to the requested resource!'}), 403
+  
+  return jsonify({
+    'message': 'Successfully gathered the requested todo.',
+    'data': todo.serialized
+  }), 200
 
-@bp.route('/<id>', methods = ['PUT'])
-def update_single_todo(id):
+@bp.route('/<id>', methods = ['PATCH'])
+@token_required
+def update_single_todo(current_user, id):
   current_todo = Todo.query.get(id)
+  if not current_todo:
+    return jsonify({'message': 'There is no such todo!'}), 404
+  if ROLES['user'] == current_user.role_id and current_todo.user_id != current_user.user_id:
+    return jsonify({'message': 'You don\'t have access to the requested resource!'}), 403
 
-  if not current_todo: return jsonify(), 404
-
-  if 'title' in request.form:
-    current_todo.title = request.form['title']
-  if 'description' in request.form:
-    current_todo.description = request.form['description']
-  if 'duedate' in request.form:
-    current_todo.duedate = datetime.datetime.fromisoformat(request.form['duedate'])
-  if 'status' in request.form:
-    current_todo.status = request.form['status']
+  title = request.json.get('title')
+  description = request.json.get('description')
+  duedate = request.json.get('duedate')
+  status = request.json.get('status')
+  
+  if not title and not description and not duedate and not status:
+    return jsonify({'message': 'The request didn\'t contain any valid data!'}), 400
+  
+  if title:
+    current_todo.title = title
+  if description:
+    current_todo.description = description
+  if duedate:
+    current_todo.duedate = datetime.datetime.fromisoformat(duedate)
+  if status:
+    current_todo.status = status
   db.session.commit()
   return jsonify({
+    'message': 'Successfully updated the requested todo.',
     'data': current_todo.serialized
   }), 200
 
 @bp.route('/<id>', methods = ['DELETE'])
-def delete_single_todo(id):
+@token_required
+def delete_single_todo(current_user, id):
   old_todo = Todo.query.get(id)
-
-  if not old_todo: return jsonify(), 404
-  
+  if not old_todo:
+    return jsonify({'message': 'There is no such todo!'}), 404
+  if ROLES['user'] == current_user.role_id and old_todo.user_id != current_user.user_id:
+    return jsonify({'message': 'You don\'t have access to the requested resource!'}), 403
   db.session.delete(old_todo)
   db.session.commit()
   return jsonify({
+    'message': 'Successfully delted the requested resource.',
     'data': old_todo.serialized
   }), 200
