@@ -7,5 +7,5 @@ The environementvariables are:
 
 Development Server:
 ```bash
-flask --app server run --debug --port 3800
+flask run --debug --port 3800
 ```
