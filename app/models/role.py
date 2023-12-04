@@ -5,6 +5,8 @@ from typing import List
 from sqlalchemy.orm import relationship, Mapped
 from app.models import user
 
+ROLES = {'admin': 1, 'user': 2}
+
 class Role(db.Model):
   __tablename__ = "role_table"
   id = Column(Integer, primary_key=True, autoincrement=True)

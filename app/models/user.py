@@ -16,3 +16,13 @@ class User(db.Model):
 
   def __repr__(self) -> str:
     return f'<User "{self.username}">'
+  
+  @property
+  def serialized(self):
+    """Return object data in serializable format
+    """
+    return {
+      'id': self.id,
+      'username': self.username,
+      'role_id': self.role_id,
+    }
