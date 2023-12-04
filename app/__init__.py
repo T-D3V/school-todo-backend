@@ -1,6 +1,7 @@
 from flask import Flask
+from app.models import role
 from config import Config
-from app.extensions import db, cors
+from app.extensions import db, cors, migrate
 
 def create_app(config_class=Config):
   app = Flask(__name__)
@@ -9,6 +10,7 @@ def create_app(config_class=Config):
   # Initialize Flask extensions here
   cors.init_app(app, resources=r'/*')
   db.init_app(app)
+  migrate.init_app(app, db, command='migrate')
 
   # Register blueprints here
   from app.main import bp as main_bp
@@ -19,8 +21,10 @@ def create_app(config_class=Config):
 
   from app.todo import bp as todo_bp
   app.register_blueprint(todo_bp, url_prefix='/todo')
-  
-  from app.todos import bp as todos_bp
-  app.register_blueprint(todos_bp, url_prefix='/todos')
 
+  from app.models import todo, user, role
+
+  from db_setup import populate_db_command
+  app.cli.add_command(populate_db_command)
+  
   return app
