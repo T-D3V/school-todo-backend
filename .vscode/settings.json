@@ -1,3 +1,16 @@
 {
-  "python.languageServer": "Pylance"
+  "python.languageServer": "Pylance",
+  "[python]": {
+    "editor.formatOnSave": true,
+    "diffEditor.ignoreTrimWhitespace": false,
+    "editor.formatOnType": true,
+    "editor.wordBasedSuggestions": "off",
+    "editor.codeActionsOnSave": {
+      "source.organizeImport.ruff": true,
+    },
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "ruff.format.args": [
+    "--config=pyproject.toml"
+  ]
 }

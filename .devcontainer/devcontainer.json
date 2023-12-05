@@ -12,7 +12,8 @@
         "tyriar.sort-lines",
         "ms-python.black-formatter",
         "oderwat.indent-rainbow",
-        "njpwerner.autodocstring"
+        "njpwerner.autodocstring",
+        "charliermarsh.ruff"
       ]
     }
   },
