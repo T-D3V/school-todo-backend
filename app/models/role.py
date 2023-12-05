@@ -7,11 +7,12 @@ from app.models import user
 
 ROLES = {'admin': 1, 'user': 2}
 
+
 class Role(db.Model):
-  __tablename__ = "role_table"
+  __tablename__ = 'role_table'
   id = Column(Integer, primary_key=True, autoincrement=True)
   name = Column(String(25), nullable=False)
-  users: Mapped[List["user.User"]] = relationship(back_populates="roles")
+  users: Mapped[List['user.User']] = relationship(back_populates='roles')
 
   def __repr__(self) -> str:
     return f'<Role "{self.name}">'

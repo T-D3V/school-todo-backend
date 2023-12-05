@@ -5,22 +5,22 @@ from typing import List
 from sqlalchemy.orm import relationship, Mapped
 from app.models import role, todo
 
+
 class User(db.Model):
-  __tablename__ = "user_table"
+  __tablename__ = 'user_table'
   id = Column(Integer, primary_key=True, autoincrement=True)
   username = Column(String(25), nullable=False, unique=True)
   password = Column(String(512), nullable=False)
-  todos: Mapped[List["todo.Todo"]] = relationship(back_populates="users")
+  todos: Mapped[List['todo.Todo']] = relationship(back_populates='users')
   role_id = Column(ForeignKey('role_table.id'))
-  roles: Mapped[List["role.Role"]] = relationship(back_populates="users")
+  roles: Mapped[List['role.Role']] = relationship(back_populates='users')
 
   def __repr__(self) -> str:
     return f'<User "{self.username}">'
-  
+
   @property
   def serialized(self):
-    """Return object data in serializable format
-    """
+    """Return object data in serializable format"""
     return {
       'id': self.id,
       'username': self.username,

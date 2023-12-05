@@ -6,11 +6,14 @@
     "editor.formatOnType": true,
     "editor.wordBasedSuggestions": "off",
     "editor.codeActionsOnSave": {
-      "source.organizeImport.ruff": true,
+      "source.organizeImport": true,
     },
     "editor.defaultFormatter": "charliermarsh.ruff"
   },
   "ruff.format.args": [
+    "--config=pyproject.toml"
+  ],
+  "ruff.lint.args": [
     "--config=pyproject.toml"
   ]
 }
