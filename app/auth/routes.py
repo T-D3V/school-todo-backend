@@ -7,7 +7,6 @@ from app.models.role import ROLES
 import jwt
 from app.auth.decorators import token_required
 from datetime import datetime, timezone, timedelta
-from sqlalchemy.sql import text
 
 
 @bp.route('/register', methods=['POST'])

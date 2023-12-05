@@ -1,5 +1,4 @@
 from flask import Flask
-from app.models import role
 from config import Config
 from app.extensions import db, cors, migrate
 
