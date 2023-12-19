@@ -5,6 +5,7 @@ from app.models.todo import Todo
 import datetime
 from app.auth.decorators import token_required
 from app.models.role import ROLES
+import html
 
 
 @bp.route('/', methods=['GET'])
@@ -30,6 +31,20 @@ def create_new_todo(current_user):
   description = request.json.get('description')
   duedate = request.json.get('duedate')
   user_id = current_user.id
+
+  if not title or not description or not duedate or not user_id:
+    return jsonify({'message': 'To little information provided!'}), 400
+  if len(title) > 150:
+    return jsonify({'message': 'Title is longer than 150 characters!'}), 400
+  title = html.escape(title)
+  # If one wanted to store escaped html in the database but I would suggest to let frontend handle the escaping maybee one wants to use a wysiwyg editor for description
+  # description = html.escape(description)
+  try:
+    datetime.datetime.fromisoformat(duedate)
+  except ValueError:
+    return jsonify(
+      {'message': "The provided date doesn't match ISO8601 requirements!"}
+    ), 400
 
   new_todo = Todo(
     title=title,
@@ -78,6 +93,20 @@ def update_single_todo(current_user, id):
 
   if not title and not description and not duedate and not status:
     return jsonify({'message': "The request didn't contain any valid data!"}), 400
+
+  if len(title) > 150:
+    return jsonify({'message': 'Title is longer than 150 characters!'}), 400
+  title = html.escape(title)
+  # If one wanted to store escaped html in the database but I would suggest to let frontend handle the escaping maybee one wants to use a wysiwyg editor for description
+  # description = html.escape(description)
+  try:
+    datetime.datetime.fromisoformat(duedate)
+  except ValueError:
+    return jsonify(
+      {'message': "The provided date doesn't match ISO8601 requirements!"}
+    ), 400
+
+  # If i would be maintainer of frontend and backend I would also validate status but, this isn't validated here cause I have no knowledge of how many status the todo has,  could be implemented over an environement variable.
 
   if title:
     current_todo.title = title
