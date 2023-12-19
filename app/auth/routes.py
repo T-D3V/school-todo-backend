@@ -3,10 +3,11 @@ from app.auth import bp
 from app.models.user import User
 import bcrypt
 from app.extensions import db
-from app.models.role import ROLES
+from app.models.role import ROLES, Role
 import jwt
 from app.auth.decorators import token_required
 from datetime import datetime, timezone, timedelta
+import re
 
 
 @bp.route('/register', methods=['POST'])
@@ -14,9 +15,24 @@ def register():
   username = request.json.get('username')
   password = request.json.get('password')
 
+  if not username:
+    return jsonify({'message': 'No username provided!'}), 400
+
+  if not password:
+    return jsonify({'message': 'No password provided!'}), 400
+
+  if not re.fullmatch(r'^[a-zA-Z0-9]+([_ -]?[a-zA-Z0-9])*$', username):
+    return jsonify({'message': "The username doesn't meet the requirements!"}), 400
+
+  if len(password) < 8:
+    return jsonify({'message': 'The password must be at least 8 characters long!'}), 400
+
+  if not re.fullmatch(r'[A-Za-z0-9@#$%^&+=]{8,}', password):
+    return jsonify({'message': "The password didn't meet the requirements!"}), 400
+
   existing_user = User.query.filter_by(username=username).first()
   if existing_user:
-    return jsonify({'message': 'This Username is already taken!'}), 422
+    return jsonify({'message': 'This Username is already taken!'}), 400
 
   hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
   new_user = User(username=username, password=hashed_password, role_id=ROLES['user'])
@@ -33,6 +49,13 @@ def register():
 def login():
   username = request.json.get('username')
   password = request.json.get('password')
+
+  if not username:
+    return jsonify({'message': 'No username provided!'}), 400
+
+  if not password:
+    return jsonify({'message': 'No password provided!'}), 400
+
   user = User.query.filter_by(username=username).first()
   if user:
     if bcrypt.checkpw(password.encode('utf-8'), user.password):
@@ -104,6 +127,25 @@ def update_single_user(current_user: User, id):
   old_password = request.json.get('old_password')
   new_password = request.json.get('new_password')
   role_id = request.json.get('role_id')
+
+  if not username and not old_password and not new_password and not role_id:
+    return jsonify({'message': 'Nothing to alter!'}), 201
+
+  if username and not re.fullmatch(r'^[a-zA-Z0-9]+([_ -]?[a-zA-Z0-9])*$', username):
+    return jsonify({'message': "The username doesn't meet the requirements!"}), 400
+
+  if new_password and len(new_password) < 8:
+    return jsonify({'message': 'The password must be at least 8 characters long!'}), 400
+
+  if new_password and not re.fullmatch(r'[A-Za-z0-9@#$%^&+=]{8,}', new_password):
+    return jsonify({'message': "The password didn't meet the requirements!"}), 400
+
+  existing_user = User.query.filter_by(username=username).first()
+  if existing_user:
+    return jsonify({'message': 'This Username is already taken!'}), 400
+
+  if role_id and not Role.query.filter_by(id=role_id).first():
+    return jsonify({'message': "The provided role doesn't exist!"}), 400
   if username:
     selected_user.username = username
   if new_password:
