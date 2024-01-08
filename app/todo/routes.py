@@ -52,6 +52,8 @@ def create_new_todo(current_user):
     duedate=datetime.datetime.fromisoformat(duedate),
     status=0,
     user_id=user_id,
+    created_at=datetime.datetime.now(tz=datetime.timezone.utc),
+    updated_at=datetime.datetime.now(tz=datetime.timezone.utc)
   )
   db.session.add(new_todo)
   db.session.commit()
@@ -116,6 +118,7 @@ def update_single_todo(current_user, id):
     current_todo.duedate = datetime.datetime.fromisoformat(duedate)
   if status:
     current_todo.status = status
+  current_todo.updated_at = datetime.datetime.now(tz=datetime.timezone.utc)
   db.session.commit()
   return jsonify(
     {

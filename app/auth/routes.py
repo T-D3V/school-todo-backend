@@ -35,7 +35,7 @@ def register():
     return jsonify({'message': 'This Username is already taken!'}), 400
 
   hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-  new_user = User(username=username, password=hashed_password, role_id=ROLES['user'])
+  new_user = User(username=username, password=hashed_password, role_id=ROLES['user'], creted_at=datetime.now(tz=timezone.utc), updated_at=datetime.now(tz=timezone.utc))
   db.session.add(new_user)
   db.session.commit()
 
@@ -73,6 +73,8 @@ def login():
       response = make_response(jsonify({'message': 'Login successful.'}), 200)
       response.set_cookie('token', token)
       return response
+    else:
+      current_app.logger.info(msg="Incorrect password tried for "+user.username)
   return jsonify({'message': 'Invalid username or password!'}), 400
 
 
@@ -171,6 +173,7 @@ def update_single_user(current_user: User, id):
       selected_user.role_id = role_id
     else:
       return jsonify({'message': "You aren't authorized to do this!"}), 403
+  selected_user.updated_at =  datetime.now(tz=timezone.utc)
   db.session.commit()
   return (
     jsonify(
