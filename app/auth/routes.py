@@ -1,6 +1,7 @@
 from flask import jsonify, request, current_app, make_response
 from app.auth import bp
 from app.models.user import User
+from app.models.user_security import UserSecurity
 import bcrypt
 from app.extensions import db
 from app.models.role import ROLES, Role
@@ -35,8 +36,11 @@ def register():
     return jsonify({'message': 'This Username is already taken!'}), 400
 
   hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-  new_user = User(username=username, password=hashed_password, role_id=ROLES['user'], creted_at=datetime.now(tz=timezone.utc), updated_at=datetime.now(tz=timezone.utc))
+  new_user = User(username=username, password=hashed_password, role_id=ROLES['user'])
   db.session.add(new_user)
+  db.session.commit()
+  new_user_security = UserSecurity(action='INSERT', user_id=User.id, user_username=User.username, user_role_id=User.role_id, action_by=f"{User.id}.{User.username}")
+  db.session.add(new_user_security)
   db.session.commit()
 
   return (
@@ -73,8 +77,6 @@ def login():
       response = make_response(jsonify({'message': 'Login successful.'}), 200)
       response.set_cookie('token', token)
       return response
-    else:
-      current_app.logger.info(msg="Incorrect password tried for "+user.username)
   return jsonify({'message': 'Invalid username or password!'}), 400
 
 
@@ -173,7 +175,8 @@ def update_single_user(current_user: User, id):
       selected_user.role_id = role_id
     else:
       return jsonify({'message': "You aren't authorized to do this!"}), 403
-  selected_user.updated_at =  datetime.now(tz=timezone.utc)
+  selected_user_security = UserSecurity(action='UPDATE', user_id=selected_user.id, user_username=selected_user.username, user_role_id=selected_user.role_id, action_by=f"{current_user.id}.{current_user.username}")
+  db.session.add(selected_user_security)
   db.session.commit()
   return (
     jsonify(
@@ -194,6 +197,8 @@ def delete_single_user(current_user: User, id):
     return jsonify({'message': "The requested user doesn' exist!"}), 404
   if ROLES['user'] == current_user.role_id and id != current_user.id:
     return jsonify({'message': "You don't have access to the requested user!"}), 403
+  selected_user_security = UserSecurity(action='DELETE', user_id=selected_user.id, action_by=f"{current_user.id}.{current_user.username}")
+  db.session.add(selected_user_security)
   db.session.delete(selected_user)
   db.session.commit()
   return (

@@ -2,6 +2,7 @@ from flask import jsonify, request
 from app.todo import bp
 from app.extensions import db
 from app.models.todo import Todo
+from app.models.todo_security import TodoSecurity
 import datetime
 from app.auth.decorators import token_required
 from app.models.role import ROLES
@@ -52,10 +53,11 @@ def create_new_todo(current_user):
     duedate=datetime.datetime.fromisoformat(duedate),
     status=0,
     user_id=user_id,
-    created_at=datetime.datetime.now(tz=datetime.timezone.utc),
-    updated_at=datetime.datetime.now(tz=datetime.timezone.utc)
   )
   db.session.add(new_todo)
+  db.session.commit()
+  new_todo_security = TodoSecurity(action='INSERT', todo_id=new_todo.id, todo_title=new_todo.title, todo_description=new_todo.description, todo_duedate=new_todo.duedate, todo_status=new_todo.status, todo_user_id=new_todo.user_id, action_by=f"{current_user.id}.{current_user.username}")
+  db.session.add(new_todo_security)
   db.session.commit()
   return jsonify(
     {'message': 'Successfully created a new todo.', 'data': new_todo.serialized}
@@ -118,7 +120,9 @@ def update_single_todo(current_user, id):
     current_todo.duedate = datetime.datetime.fromisoformat(duedate)
   if status:
     current_todo.status = status
-  current_todo.updated_at = datetime.datetime.now(tz=datetime.timezone.utc)
+
+  current_todo_security = TodoSecurity(action='UPDATE', todo_id=current_todo.id, todo_title=current_todo.title, todo_description=current_todo.description, todo_duedate=current_todo.duedate, todo_status=current_todo.status, todo_user_id=current_todo.user_id, action_by=f"{current_user.id}.{current_user.username}")
+  db.session.add(current_todo_security)
   db.session.commit()
   return jsonify(
     {
@@ -136,6 +140,8 @@ def delete_single_todo(current_user, id):
     return jsonify({'message': 'There is no such todo!'}), 404
   if ROLES['user'] == current_user.role_id and old_todo.user_id != current_user.user_id:
     return jsonify({'message': "You don't have access to the requested resource!"}), 403
+  old_todo_security = TodoSecurity(action='DELETE', todo_id=old_todo.id, action_by=f"{current_user.id}.{current_user.username}")
+  db.session.add(old_todo_security)
   db.session.delete(old_todo)
   db.session.commit()
   return jsonify(

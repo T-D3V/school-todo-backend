@@ -1,6 +1,6 @@
 from flask import Flask
 from config import Config
-from app.extensions import db, cors, migrate
+from app.extensions import db, cors, migrate, handler
 
 
 def create_app(config_class=Config):
@@ -25,7 +25,7 @@ def create_app(config_class=Config):
 
   app.register_blueprint(todo_bp, url_prefix='/todo')
 
-  from app.models import todo, user, role
+  from app.models import todo, user, role, todo_security, user_security, role_security
 
   from db_setup import populate_db_command
 
