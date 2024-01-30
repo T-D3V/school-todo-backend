@@ -1,6 +1,7 @@
 from flask import Flask
 from config import Config
-from app.extensions import db, cors, migrate, handler
+from app.extensions import db, cors, migrate, handler, handlerFile
+from flask.logging import default_handler
 
 
 def create_app(config_class=Config):
@@ -11,6 +12,10 @@ def create_app(config_class=Config):
   cors.init_app(app, resources=r'/*')
   db.init_app(app)
   migrate.init_app(app, db, command='migrate')
+  app.logger.removeHandler(default_handler)
+  app.logger.addHandler(handler)
+  app.logger.addHandler(handlerFile)
+  app.logger.info('Logging initialized')
 
   # Register blueprints here
   from app.main import bp as main_bp
