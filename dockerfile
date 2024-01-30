@@ -6,7 +6,7 @@ WORKDIR /home/worker
 COPY --chown=worker:worker requirements.txt requirements.txt
 RUN pip3 install --no-cache-dir -r requirements.txt
 ENV PATH="/home/worker/.local/bin:${PATH}"
-WORKDIR /app
+WORKDIR /app/src
 copy --chown=worker:worker . .
 EXPOSE 8080
 RUN flask migrate upgrade
