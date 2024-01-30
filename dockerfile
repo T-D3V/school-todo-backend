@@ -1,6 +1,6 @@
 FROM python:3-slim
 RUN pip3 install --upgrade pip
-RUN adduser -D worker
+RUN adduser worker
 USER worker
 WORKDIR /home/worker
 COPY --chown=worker:worker requirements.txt requirements.txt
