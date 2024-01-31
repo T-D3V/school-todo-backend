@@ -2,7 +2,7 @@
   "name": "SchoolTodoBackend",
   "dockerComposeFile": "docker-compose.yml",
   "service": "web",
-  "workspaceFolder": "/usr/src/app",
+  "workspaceFolder": "/app",
   "customizations": {
     "vscode": {
       "extensions": [

@@ -7,5 +7,5 @@ services:
       dockerfile: dockerfile
       target: dev
     volumes:
-      - ../:/usr/src/app
+      - ../:/app
     command: /bin/sh -c "while sleep 1000; do :; done"

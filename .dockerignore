@@ -91,3 +91,4 @@ venv/
 
 #database
 app.db
+log

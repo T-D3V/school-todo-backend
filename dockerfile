@@ -13,4 +13,4 @@ copy --chown=worker:worker . .
 EXPOSE 8080
 RUN flask migrate upgrade
 RUN flask pre-populate
-CMD ["gunicorn","--config","gunicorn_config.py", "app:create_app()"]
+CMD ["gunicorn","-k","gevent","--config","gunicorn_config.py","app:create_app()"]

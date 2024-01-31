@@ -1,19 +1,25 @@
 from flask import Flask
 from config import Config
-from app.extensions import db, cors, migrate, handlerFile
-from flask.logging import default_handler
+from app.extensions import db, cors, migrate, formatter
+import logging
 
 
 def create_app(config_class=Config):
   app = Flask(__name__)
+  if __name__ != '__main__':
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.addHandler(logging.FileHandler('/app/log/todo_api.log'))
+    for handler in app.logger.handlers:
+      handler.setFormatter(formatter)
+    app.logger.setLevel(gunicorn_logger.level)
+
   app.config.from_object(config_class)
 
   # Initialize Flask extensions here
   cors.init_app(app, resources=r'/*')
   db.init_app(app)
   migrate.init_app(app, db, command='migrate')
-  app.logger.removeHandler(default_handler)
-  app.logger.addHandler(handlerFile)
   app.logger.info('Logging initialized')
 
   # Register blueprints here

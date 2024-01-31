@@ -18,7 +18,7 @@ def read_all_todos(current_user):
     else Todo.query.filter_by(user_id=current_user.user_id).all()
   )
   current_app.logger.info(
-    f'[{request.remote_addr}][200]: Gathered all accessible todos.'
+    f'[{request.remote_addr}] [200]: Gathered all accessible todos.'
   )
   return jsonify(
     {
@@ -38,12 +38,12 @@ def create_new_todo(current_user):
 
   if not title or not description or not duedate or not user_id:
     current_app.logger.info(
-      f'[{request.remote_addr}][400]: To little information provided!'
+      f'[{request.remote_addr}] [400]: To little information provided!'
     )
     return jsonify({'message': 'To little information provided!'}), 400
   if len(title) > 150:
     current_app.logger.info(
-      f'[{request.remote_addr}][400]: Title is longer than 150 characters!'
+      f'[{request.remote_addr}] [400]: Title is longer than 150 characters!'
     )
     return jsonify({'message': 'Title is longer than 150 characters!'}), 400
   title = html.escape(title)
@@ -53,7 +53,7 @@ def create_new_todo(current_user):
     datetime.datetime.fromisoformat(duedate)
   except ValueError:
     current_app.logger.info(
-      f"[{request.remote_addr}][400]: The provided date doesn't match ISO8601 requirements!"
+      f"[{request.remote_addr}] [400]: The provided date doesn't match ISO8601 requirements!"
     )
     return jsonify(
       {'message': "The provided date doesn't match ISO8601 requirements!"}
@@ -81,7 +81,7 @@ def create_new_todo(current_user):
   db.session.add(new_todo_security)
   db.session.commit()
   current_app.logger.info(
-    f'[{request.remote_addr}][201]: Successfully created a new todo.'
+    f'[{request.remote_addr}] [201]: Successfully created a new todo.'
   )
   return jsonify(
     {'message': 'Successfully created a new todo.', 'data': new_todo.serialized}
@@ -93,15 +93,15 @@ def create_new_todo(current_user):
 def read_single_todo(current_user, id):
   todo = Todo.query.get(id)
   if not todo:
-    current_app.logger.info(f'[{request.remote_addr}][404]: There is no such todo!')
+    current_app.logger.info(f'[{request.remote_addr}] [404]: There is no such todo!')
     return jsonify({'message': 'There is no such todo!'}), 404
   if ROLES['user'] == current_user.role_id and todo.user_id != current_user.user_id:
     current_app.logger.warn(
-      f"[{request.remote_addr}][403]: You don't have access to the requested resource!"
+      f"[{request.remote_addr}] [403]: You don't have access to the requested resource!"
     )
     return jsonify({'message': "You don't have access to the requested resource!"}), 403
   current_app.logger.info(
-    f'[{request.remote_addr}][200]: Successfully gathered the requested todo.'
+    f'[{request.remote_addr}] [200]: Successfully gathered the requested todo.'
   )
   return jsonify(
     {'message': 'Successfully gathered the requested todo.', 'data': todo.serialized}
@@ -113,14 +113,14 @@ def read_single_todo(current_user, id):
 def update_single_todo(current_user, id):
   current_todo = Todo.query.get(id)
   if not current_todo:
-    current_app.logger.info(f'[{request.remote_addr}][404]: There is no such todo!')
+    current_app.logger.info(f'[{request.remote_addr}] [404]: There is no such todo!')
     return jsonify({'message': 'There is no such todo!'}), 404
   if (
     ROLES['user'] == current_user.role_id
     and current_todo.user_id != current_user.user_id
   ):
     current_app.logger.warn(
-      f"[{request.remote_addr}][403]: You don't have access to the requested resource!"
+      f"[{request.remote_addr}] [403]: You don't have access to the requested resource!"
     )
     return jsonify({'message': "You don't have access to the requested resource!"}), 403
 
@@ -131,13 +131,13 @@ def update_single_todo(current_user, id):
 
   if not title and not description and not duedate and not status:
     current_app.logger.info(
-      f"[{request.remote_addr}][400]: The request didn't contain any valid data!"
+      f"[{request.remote_addr}] [400]: The request didn't contain any valid data!"
     )
     return jsonify({'message': "The request didn't contain any valid data!"}), 400
 
   if len(title) > 150:
     current_app.logger.info(
-      f'[{request.remote_addr}][400]: Title is longer than 150 characters!'
+      f'[{request.remote_addr}] [400]: Title is longer than 150 characters!'
     )
     return jsonify({'message': 'Title is longer than 150 characters!'}), 400
   title = html.escape(title)
@@ -147,7 +147,7 @@ def update_single_todo(current_user, id):
     datetime.datetime.fromisoformat(duedate)
   except ValueError:
     current_app.logger.info(
-      f"[{request.remote_addr}][400]: The provided date doesn't match ISO8601 requirements!"
+      f"[{request.remote_addr}] [400]: The provided date doesn't match ISO8601 requirements!"
     )
     return jsonify(
       {'message': "The provided date doesn't match ISO8601 requirements!"}
@@ -177,7 +177,7 @@ def update_single_todo(current_user, id):
   db.session.add(current_todo_security)
   db.session.commit()
   current_app.logger.info(
-    f'[{request.remote_addr}][200]: Successfully updated the requested todo.'
+    f'[{request.remote_addr}] [200]: Successfully updated the requested todo.'
   )
   return jsonify(
     {
@@ -192,11 +192,11 @@ def update_single_todo(current_user, id):
 def delete_single_todo(current_user, id):
   old_todo = Todo.query.get(id)
   if not old_todo:
-    current_app.logger.info(f'[{request.remote_addr}][404]: There is no such todo!')
+    current_app.logger.info(f'[{request.remote_addr}] [404]: There is no such todo!')
     return jsonify({'message': 'There is no such todo!'}), 404
   if ROLES['user'] == current_user.role_id and old_todo.user_id != current_user.user_id:
     current_app.logger.warn(
-      f"[{request.remote_addr}][403]: You don't have access to the requested resource!"
+      f"[{request.remote_addr}] [403]: You don't have access to the requested resource!"
     )
     return jsonify({'message': "You don't have access to the requested resource!"}), 403
   old_todo_security = TodoSecurity(
@@ -208,7 +208,7 @@ def delete_single_todo(current_user, id):
   db.session.delete(old_todo)
   db.session.commit()
   current_app.logger.info(
-    f'[{request.remote_addr}][200]: Successfully delted the requested resource.'
+    f'[{request.remote_addr}] [200]: Successfully delted the requested resource.'
   )
   return jsonify(
     {
